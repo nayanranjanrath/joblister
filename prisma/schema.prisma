@@ -19,6 +19,24 @@ model users{
   id    String @id @default(uuid())
   username   String @unique
   fullname   String?
-  
+  email String @unique
+password String
+  refreshtoken String?
+  dob   DateTime?
+  avatar String?
+  jobs jobs[]@relation("postedby")
+  createdAt DateTime @default(now())
 
+}
+
+model jobs {
+  id String @id @default(uuid())
+  post String
+  description String?
+  companyname String
+  location String
+  type String
+  createdAt DateTime @default(now())
+  postedbyid String
+  postedby users @relation("postedby",fields: [postedbyid],references: [id])
 }
