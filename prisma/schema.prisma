@@ -14,7 +14,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  
+}
 model users{
   id    String @id @default(uuid())
   username   String @unique
@@ -26,7 +31,7 @@ password String
   avatar String?
   jobs jobs[]@relation("postedby")
   createdAt DateTime @default(now())
-
+  appliedto aplication[]
 }
 
 model jobs {
@@ -39,4 +44,16 @@ model jobs {
   createdAt DateTime @default(now())
   postedbyid String
   postedby users @relation("postedby",fields: [postedbyid],references: [id])
+  aplicatn aplication[]
+}
+
+model aplication {
+  id String @id @default(uuid())
+  jobid String
+  userid String
+  status ApplicationStatus @default(PENDING) 
+  createdAt DateTime @default(now())
+  job jobs @relation(fields: [jobid],references: [id])
+  user users @relation(fields: [userid],references: [id])
+  @@unique([jobid,userid])
 }
