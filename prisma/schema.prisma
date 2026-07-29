@@ -30,8 +30,10 @@ password String
   dob   DateTime?
   avatar String?
   jobs jobs[]@relation("postedby")
+  description String
   createdAt DateTime @default(now())
   appliedto aplication[]
+  educationdetails educationdetails[]
 }
 
 model jobs {
@@ -56,4 +58,18 @@ model aplication {
   job jobs @relation(fields: [jobid],references: [id])
   user users @relation(fields: [userid],references: [id])
   @@unique([jobid,userid])
+}
+
+model educationdetails{
+  id String @id @default(uuid())
+  userid String
+  degree String
+  yearofcomplition String
+  college  String
+  proof String
+  user users @relation(fields: [userid],references: [id])
+}
+model expirience{
+  id String @id @default(uuid())
+  
 }
