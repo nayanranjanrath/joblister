@@ -44,6 +44,7 @@ model jobs {
   location String
   type String
   createdAt DateTime @default(now())
+  expaireAT DateTime 
   postedbyid String
   postedby users @relation("postedby",fields: [postedbyid],references: [id])
   aplicatn aplication[]
@@ -71,5 +72,24 @@ model educationdetails{
 }
 model expirience{
   id String @id @default(uuid())
-  
+  start DateTime
+  end DateTime @default(now())
+  details String
+  proof String
+  company String
+
+
+}
+
+model requirement {
+  id String @id @default(uuid())
+  skills String[]
+  expirience Int
+  description String
+
+}
+model skills{
+  id String @id @default(uuid())
+  skill String
+
 }
