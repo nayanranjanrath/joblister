@@ -83,7 +83,7 @@ model expirience{
 
 model requirement {
   id String @id @default(uuid())
-  skills String[]
+  skills String[] @default([])
   expirience Int
   description String
 
