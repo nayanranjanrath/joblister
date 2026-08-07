@@ -45,14 +45,14 @@ model jobs {
   type String
   createdAt DateTime @default(now())
   expaireAT DateTime 
-  postedbyid String
+  postedbyid String 
   postedby users @relation("postedby",fields: [postedbyid],references: [id])
   aplicatn aplication[]
 }
 
 model aplication {
   id String @id @default(uuid())
-  jobid String
+  jobid String @unique
   userid String
   status ApplicationStatus @default(PENDING) 
   createdAt DateTime @default(now())
@@ -86,7 +86,7 @@ model requirement {
   skills String[] @default([])
   expirience Int
   description String
-  jobid String
+  jobid String @unique
   job jobs @relation(fields: [jobid],references: [id])
 
 }
