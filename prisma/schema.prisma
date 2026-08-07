@@ -86,6 +86,8 @@ model requirement {
   skills String[] @default([])
   expirience Int
   description String
+  jobid String
+  job jobs @relation(fields: [jobid],references: [id])
 
 }
 model skills{
