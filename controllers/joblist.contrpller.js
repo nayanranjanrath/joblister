@@ -1,5 +1,5 @@
 import prisma from "../utility/prisma";
-import {extractToken} from "../utility/jwt.js"
+import { extractToken } from "../utility/jwt.js"
 import { uploadtocloudinar } from "../utility/cloudinary.js";
 export const addjob = async (req, res) => {
     try {
@@ -7,7 +7,7 @@ export const addjob = async (req, res) => {
         if (!token) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-        const {description,companyname,location,type} = req.body;
+        const { description, companyname, location, type } = req.body;
         if (!description || !companyname || !location || !type) {
             return res.status(400).json({ message: "All fields are required" });
         }
@@ -29,10 +29,10 @@ export const addjob = async (req, res) => {
             expaireAT: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
             postedby: { connect: { id: userId } },
         });
-        res.status(201).json({ message: "Job created successfully", job });
+        return res.status(201).json({ message: "Job created successfully", job });
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -42,7 +42,7 @@ export const applyjob = async (req, res) => {
         if (!token) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-        const  jobId  = req.body.jobId ;
+        const jobId = req.body.jobId;
         if (!jobId) {
             return res.status(400).json({ message: "Job ID is required" });
         }
@@ -60,20 +60,20 @@ export const applyjob = async (req, res) => {
                 user: { connect: { id: userId } },
             },
         });
-        res.status(201).json({ message: "Application submitted successfully", application });
+        return res.status(201).json({ message: "Application submitted successfully", application });
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
 export const aproveapplicant = async (req, res) => {
-    try {  
+    try {
         const token = req.cookies.accesstoken;
         if (!token) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-        const  applicationId  = req.body.applicationId ;
+        const applicationId = req.body.applicationId;
         if (!applicationId) {
             return res.status(400).json({ message: "Application ID is required" });
         }
@@ -85,8 +85,10 @@ export const aproveapplicant = async (req, res) => {
         if (!application) {
             return res.status(404).json({ message: "Application not found" });
         }
-        const job = await prisma.job.findUnique({ where: { id: application.jobId },
-        include: { postedby: true } });
+        const job = await prisma.job.findUnique({
+            where: { id: application.jobId },
+            include: { postedby: true }
+        });
         if (!job) {
             return res.status(404).json({ message: "Job not found" });
         }
@@ -97,24 +99,24 @@ export const aproveapplicant = async (req, res) => {
             where: { id: applicationId },
             data: { status: "approved" },
         });
-        res.status(200).json({ message: "Applicant approved successfully", updatedApplication });
+        return res.status(200).json({ message: "Applicant approved successfully", updatedApplication });
     }
-        
-        
-     catch (error) {
+
+
+    catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
 
 export const rejectapplicant = async (req, res) => {
-    try {  
+    try {
         const token = req.cookies.accesstoken;
         if (!token) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-        const  applicationId  = req.body.applicationId ;
+        const applicationId = req.body.applicationId;
         if (!applicationId) {
             return res.status(400).json({ message: "Application ID is required" });
         }
@@ -126,8 +128,10 @@ export const rejectapplicant = async (req, res) => {
         if (!application) {
             return res.status(404).json({ message: "Application not found" });
         }
-        const job = await prisma.job.findUnique({ where: { id: application.jobId },
-        include: { postedby: true } });
+        const job = await prisma.job.findUnique({
+            where: { id: application.jobId },
+            include: { postedby: true }
+        });
         if (!job) {
             return res.status(404).json({ message: "Job not found" });
         }
@@ -138,13 +142,13 @@ export const rejectapplicant = async (req, res) => {
             where: { id: applicationId },
             data: { status: "REJECTED" },
         });
-        res.status(200).json({ message: "Applicant rejected successfully", updatedApplication });
+        return res.status(200).json({ message: "Applicant rejected successfully", updatedApplication });
     }
-        
-        
-     catch (error) {
+
+
+    catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 export const addrequirements = async (req, res) => {
@@ -153,15 +157,15 @@ export const addrequirements = async (req, res) => {
         if (!token) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-        const { jobId, expirience,description } = req.body;
-        if(!jobId){
+        const { jobId, expirience, description } = req.body;
+        if (!jobId) {
             return res.status(400).json({ message: "Job ID is required" });
         }
         const userId = extractToken(token);
         if (!userId) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-        const job= await prisma.job.findUnique({ where: { id: jobId },include: { postedby: true } });
+        const job = await prisma.job.findUnique({ where: { id: jobId }, include: { postedby: true } });
         if (!job) {
             return res.status(404).json({ message: "Job not found" });
         }
@@ -175,32 +179,123 @@ export const addrequirements = async (req, res) => {
                 job: { connect: { id: jobId } },
             },
         });
-        res.status(201).json({ message: "Requirements added successfully", requirements });
+        return res.status(201).json({ message: "Requirements added successfully", requirements });
     } catch (error) {
-          console.log(error)
-        res.status(500).json({ message: "Internal server error" });
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
 
-export const addskillrequired =async(req,res)=>{
+export const addskillrequired = async (req, res) => {
     try {
         const token = req.cookies.accesstoken;
         if (!token) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-        const { jobId, skill } = req.body;
-        if(!jobId || !skill){
-            return res.status(400).json({ message: "Job ID and skill are required" });
+        const { jobId, skills } = req.body;
+        if (!jobId || !skills) {
+            return res.status(400).json({ message: "Job ID and skills are required" });
         }
         const userId = extractToken(token);
         if (!userId) {
             return res.status(403).json({ message: "Unauthorized" });
         }
-      const requirements = await prisma.requirements.findUnique({ where: { jobId } });
-      
-        res.status(201).json({ message: "Skill added successfully", skillrequired });
+        const requirements = await prisma.requirements.findUnique({ where: { jobId } });
+
+        const updatedRequirements = await prisma.requirements.update({
+            where: {
+                jobId
+            },
+            data: {
+                skills: {
+                    connect: skills.map(id => ({ id }))
+                }
+            }
+        });
+
+        return res.status(201).json({ message: "Skill added successfully", updatedRequirements });
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const addskills = async (req, res) => {
+    try {
+        const token = req.cookies.accesstoken;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const { skillname } = req.body;
+        if (!skillname) {
+            return res.status(400).json({ message: "Skill name is required" });
+        }
+        const newskill = await prisma.skills.create({
+            data: {
+                skill: skillname,
+            }
+        })
+        return res.status(201).json({ message: "Skill added successfully", newskill });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const getallskills = async (req, res) => {
+    try {
+
+        const query = {
+            take: 10,
+            orderBy: {
+                createdAt: "desc"
+            }
+        };
+        if (req.query.cursor) {
+            query.cursor = {
+                id: req.query.cursor
+            };
+            query.skip = 1;
+        }
+        const skills = await prisma.skills.findMany({ ...query });
+        return res.status(200).json({ skills });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+const searchskills = async (req, res) => {
+    try {
+        const { skillname } = req.query;
+        if (!skillname) {
+            return res.status(400).json({ message: "Skill name is required" });
+        }
+        
+        const query = {
+            take: 10,
+            orderBy: {
+                createdAt: "desc"
+            }
+        };
+        if (req.query.cursor) {
+            query.cursor = {
+                id: req.query.cursor
+            };
+            query.skip = 1;
+        }
+        const skills = await prisma.skills.findMany({
+            where: {
+                skill: {
+                    contains: skillname,
+                    mode: "insensitive"
+                }
+            },
+           ...query
+        })
+        return res.status(200).json({ skills });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
     }
 }
