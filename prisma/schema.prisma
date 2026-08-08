@@ -65,7 +65,7 @@ model educationdetails{
   id String @id @default(uuid())
   userid String
   degree String
-  yearofcomplition String
+  yearofcomplition DateTime
   college  String
   proof String
   user users @relation(fields: [userid],references: [id])

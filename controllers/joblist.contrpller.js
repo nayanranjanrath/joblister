@@ -220,7 +220,7 @@ export const addskillrequired = async (req, res) => {
     }
 }
 
-export const addskills = async (req, res) => {
+export const addnewskills = async (req, res) => {
     try {
         const token = req.cookies.accesstoken;
         if (!token) {
@@ -299,3 +299,4 @@ const searchskills = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
