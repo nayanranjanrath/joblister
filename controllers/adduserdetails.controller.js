@@ -89,3 +89,112 @@ export const addeducationdetails = async (req, res) => {
     }
  }
 
+export const addskill=async (req, res) => {
+    try {
+        const token = req.cookies.accesstoken;
+        const{skilid}=req.body;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        if(!skilid){
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const skill = await prisma.userskills.create({
+            data: {
+                skill:{connect:{id:skilid}},
+                user: { connect: { id: userId } },
+            },
+        });
+        return res.status(201).json({ message: "Skill added successfully", skill });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const addskilltoeducation=async (req, res) => {
+    try {
+         const token = req.cookies.accesstoken;
+        const{skilid,educationid}=req.body;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        if(!skilid){
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const education = await prisma.educationdetails.findUnique({ where: { id: educationid } });
+        if (!education) {
+            return res.status(404).json({ message: "Education details not found" });
+        }
+        if(education.userid !== userId){
+            return res.status(404).json({ message: "Unauthorized" });
+        }
+        const skill = await prisma.userskills.create({
+            data: {
+                skill:{connect:{id:skilid}},
+                user: { connect: { id: userId } },
+                educationdetails: { connect: { id: educationid } },
+            },
+        });
+        return res.status(201).json({ message: "Skill added successfully", skill });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const addskilltoexpirience=async (req, res) => {
+    try {
+         const token = req.cookies.accesstoken;
+        const{skilid,expirienceid}=req.body;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        if(!skilid){
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const expirience = await prisma.expirience.findUnique({ where: { id: expirienceid } });
+        if (!expirience) {
+            return res.status(404).json({ message: "Experience details not found" });
+        }
+        if(expirience.userid !== userId){
+            return res.status(404).json({ message: "Unauthorized" });
+        }
+        const skill = await prisma.userskills.create({
+            data: {
+                skill:{connect:{id:skilid}},
+                user: { connect: { id: userId } },
+                expirience: { connect: { id: expirienceid } },
+            },
+        });
+        return res.status(201).json({ message: "Skill added successfully", skill });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+

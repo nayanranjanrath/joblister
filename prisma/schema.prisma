@@ -95,3 +95,17 @@ model skills{
   skill String
 
 }
+
+
+model userskills{
+  id String @id @default(uuid())
+  skillid String
+  userid String
+  educationid String?
+  expirienceid String?
+  educationdetails educationdetails? @relation(fields: [educationid],references: [id])
+  expirience expirience? @relation(fields: [expirienceid],references: [id])
+  user users @relation(fields: [userid],references: [id])
+  skill skills @relation(fields: [skillid],references: [id])
+
+}
