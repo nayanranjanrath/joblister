@@ -18,106 +18,132 @@ enum ApplicationStatus {
   PENDING
   ACCEPTED
   REJECTED
-  
 }
-model users{
-  id    String @id @default(uuid())
-  username   String @unique
-  fullname   String?
-  email String @unique
-password String
-  refreshtoken String?
-  dob   DateTime?
-  avatar String?
-  jobs jobs[]@relation("postedby")
-  description String
-  createdAt DateTime @default(now())
-  appliedto aplication[]
+
+model users {
+  id               String             @id @default(uuid())
+  username         String             @unique
+  fullname         String?
+  email            String             @unique
+  password         String
+  refreshtoken     String?
+  dob              DateTime?
+  avatar           String?
+  jobs             jobs[]             @relation("postedby")
+  description      String
+  createdAt        DateTime           @default(now())
+  appliedto        aplication[]
   educationdetails educationdetails[]
-  skills userskills[]
+  skills           userskills[]
+  posts            posts[]
+  like             like[]
+  comment          comment[]
 }
 
 model jobs {
-  id String @id @default(uuid())
-  post String?
+  id          String        @id @default(uuid())
+  post        String?
   description String?
   companyname String
-  location String
-  type String
-  createdAt DateTime @default(now())
-  expaireAT DateTime 
-  postedbyid String 
-  requirment requirement[]
-  postedby users @relation("postedby",fields: [postedbyid],references: [id])
+  location    String
+  type        String
+  createdAt   DateTime      @default(now())
+  expaireAT   DateTime
+  postedbyid  String
+  requirment  requirement[]
+  postedby    users         @relation("postedby", fields: [postedbyid], references: [id])
   application aplication[]
 }
 
 model aplication {
-  id String @id @default(uuid())
-  jobid String @unique
-  userid String
-  status ApplicationStatus @default(PENDING) 
-  createdAt DateTime @default(now())
-  job jobs @relation(fields: [jobid],references: [id])
-  user users @relation(fields: [userid],references: [id])
-  @@unique([jobid,userid])
+  id        String            @id @default(uuid())
+  jobid     String            @unique
+  userid    String
+  status    ApplicationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  job       jobs              @relation(fields: [jobid], references: [id])
+  user      users             @relation(fields: [userid], references: [id])
+
+  @@unique([jobid, userid])
 }
 
-model educationdetails{
-  id String @id @default(uuid())
-  userid String
-  degree String
+model educationdetails {
+  id               String       @id @default(uuid())
+  userid           String
+  degree           String
   yearofcomplition DateTime
-  college  String
-  proof String
-  user users @relation(fields: [userid],references: [id])
+  college          String
+  proof            String
+  user             users        @relation(fields: [userid], references: [id])
+  userskills       userskills[]
 }
-model expirience{
-  id String @id @default(uuid())
-  start DateTime
-  end DateTime @default(now())
+
+model expirience {
+  id      String   @id @default(uuid())
+  start   DateTime
+  end     DateTime @default(now())
   details String
-  proof String
+  proof   String
   company String
 
-
+  userskills userskills[]
 }
 
 model requirement {
-  id String @id @default(uuid())
-  skills String[] @default([])
-  expirience Int
+  id          String   @id @default(uuid())
+  skills      String[] @default([])
+  expirience  Int
   description String
-  jobid String @unique
-  job jobs @relation(fields: [jobid],references: [id])
-
+  jobid       String   @unique
+  job         jobs     @relation(fields: [jobid], references: [id])
 }
-model skills{
-  id String @id @default(uuid())
+
+model skills {
+  id    String @id @default(uuid())
   skill String
 
+  userskills userskills[]
 }
 
-
-model userskills{
-  id String @id @default(uuid())
-  skillid String
-  userid String
-  educationid String?
-  expirienceid String?
-  educationdetails educationdetails? @relation(fields: [educationid],references: [id])
-  expirience expirience? @relation(fields: [expirienceid],references: [id])
-  user users @relation(fields: [userid],references: [id])
-  skill skills @relation(fields: [skillid],references: [id])
-
+model userskills {
+  id               String            @id @default(uuid())
+  skillid          String
+  userid           String
+  educationid      String?
+  expirienceid     String?
+  educationdetails educationdetails? @relation(fields: [educationid], references: [id])
+  expirience       expirience?       @relation(fields: [expirienceid], references: [id])
+  user             users             @relation(fields: [userid], references: [id])
+  skill            skills            @relation(fields: [skillid], references: [id])
 }
 
-model posts{
-  id String @id @default(uuid())
-  title String
-  post String?
+model posts {
+  id          String    @id @default(uuid())
+  title       String
+  post        String?
   description String
-  createdAt DateTime @default(now())
-  postedbyid String
-  postedby users @relation(fields: [postedbyid],references: [id])
+  createdAt   DateTime  @default(now())
+  postedbyid  String
+  postedby    users     @relation(fields: [postedbyid], references: [id])
+  like        like[]
+  comment     comment[]
+}
+
+model like {
+  id     String @id @default(uuid())
+  userid String
+  postid String
+  user   users  @relation(fields: [userid], references: [id])
+  post   posts  @relation(fields: [postid], references: [id])
+
+  @@unique([postid, userid])
+}
+
+model comment {
+  id      String @id @default(uuid())
+  comment String
+  userid  String
+  postid  String
+  user    users  @relation(fields: [userid], references: [id])
+  post    posts  @relation(fields: [postid], references: [id])
 }
