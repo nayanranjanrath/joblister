@@ -34,11 +34,12 @@ password String
   createdAt DateTime @default(now())
   appliedto aplication[]
   educationdetails educationdetails[]
+  skills userskills[]
 }
 
 model jobs {
   id String @id @default(uuid())
-  post String
+  post String?
   description String?
   companyname String
   location String
@@ -46,8 +47,9 @@ model jobs {
   createdAt DateTime @default(now())
   expaireAT DateTime 
   postedbyid String 
+  requirment requirement[]
   postedby users @relation("postedby",fields: [postedbyid],references: [id])
-  aplicatn aplication[]
+  application aplication[]
 }
 
 model aplication {
@@ -108,4 +110,14 @@ model userskills{
   user users @relation(fields: [userid],references: [id])
   skill skills @relation(fields: [skillid],references: [id])
 
+}
+
+model posts{
+  id String @id @default(uuid())
+  title String
+  post String?
+  description String
+  createdAt DateTime @default(now())
+  postedbyid String
+  postedby users @relation(fields: [postedbyid],references: [id])
 }
