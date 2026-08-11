@@ -300,3 +300,48 @@ const searchskills = async (req, res) => {
     }
 }
 
+
+export const showapprovedapplicant=async(req,res)=>{
+    try {
+        const token = req.cookies.accesstoken;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const {jobId}=req.params.jobId
+        if (!jobId) {
+            return res.status(400).json({ message: "Job ID is required" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const job = await prisma.job.findUnique({ where: { id: jobId } });
+        if (!job) {
+            return res.status(404).json({ message: "Job not found" });
+        }
+        if(job.postedby.id!==userId){
+            return res.status(403).json({ message: "You are not authorized to view this job" });
+        }
+        const applicants = await prisma.aplication.findMany({
+            where: { jobId: jobId, status: "ACCEPTED" },
+            select: {
+                id: true,
+                user:{
+                    select: {
+                        username: true,
+                        avatar: true,
+                        email: true,
+
+                    }
+                }
+            }
+        });
+        res.set("Cache-Control", "public, max-age=300");
+        return res.status(200).json(applicants);
+        
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+

@@ -91,11 +91,12 @@ model expirience {
 
 model requirement {
   id          String   @id @default(uuid())
-  skills      String[] @default([])
+  skillids      String[] @default([])
   expirience  Int
   description String
   jobid       String   @unique
   job         jobs     @relation(fields: [jobid], references: [id])
+  skills      skills  @relation(fields: [skillids],references: [id])
 }
 
 model skills {

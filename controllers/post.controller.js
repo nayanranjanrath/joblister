@@ -140,3 +140,81 @@ export const commentapost = async(req, res) => {
     }
 }
 
+export const getcomment=async(req,res)=>{
+ try {
+    const postiid=req.params.postid;
+    if(!postiid){
+        return res.status(400).json({ message: "Post ID is required" });
+    }
+    const comments = await prisma.comment.findMany({
+        where: {
+            postId: postiid,
+        },
+        select: {
+            id: true,
+            comment: true,
+            user: {
+                select: {
+                    username: true,
+                    avatar: true,
+                },
+            },
+        },
+    })
+ } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: "Internal server error" });
+ }   
+}
+
+export const getlikes =async(req,res)=>{
+    try {
+        const postid=req.params.postid;
+        const likes = await prisma.like.findMany({
+            where: {
+                postId: postid,
+            },
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        username: true,
+                        avatar: true,
+                    },
+                },  
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const yourlikedposts = async (req,res)=>{
+    try {
+        const token = req.cookies.accesstoken;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const yourlikedposts = await prisma.like.findMany({
+            where: {
+                user: {
+                    id: userId,
+                },
+            },
+            include: {
+                post: true,
+            },
+        });
+        res.set("Cache-Control", "public, max-age=300");
+        return res.status(200).json(yourlikedposts);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+

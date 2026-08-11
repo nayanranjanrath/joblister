@@ -2,7 +2,7 @@ import prisma from "../utility/prisma";
 import { extractToken } from "../utility/extracttoken.js";
 
 
-export const showprofile=async (req, res) => {
+export const showprofile = async (req, res) => {
     try {
         const id = req.params.id;
         if (!id) {
@@ -10,7 +10,7 @@ export const showprofile=async (req, res) => {
         }
         const user = await prisma.user.findUnique({
             where: { id: id },
-           
+
             select: {
                 id: true,
                 name: true,
@@ -59,7 +59,7 @@ export const showprofile=async (req, res) => {
     }
 }
 
-export const showeducationdetails =async (req, res) => {
+export const showeducationdetails = async (req, res) => {
     try {
         const id = req.params.id;
         if (!id) {
@@ -86,7 +86,7 @@ export const showeducationdetails =async (req, res) => {
     }
 }
 
-export const showexpiriencedetails =async (req, res) => {
+export const showexpiriencedetails = async (req, res) => {
     try {
         const id = req.params.id;
         if (!id) {
@@ -114,7 +114,7 @@ export const showexpiriencedetails =async (req, res) => {
     }
 }
 
-export const showappliedjobs =async (req, res) => {
+export const showappliedjobs = async (req, res) => {
     try {
         const token = req.cookies.accesstoken;
         if (!token) {
@@ -127,8 +127,9 @@ export const showappliedjobs =async (req, res) => {
         const appliedJobs = await prisma.application.findMany({
             where: { userId: userId },
             include: {
-                job: true,}
-                
+                job: true,
+            }
+
         });
         res.set("Cache-Control", "public, max-age=300");
         return res.status(200).json(appliedJobs);
@@ -139,7 +140,7 @@ export const showappliedjobs =async (req, res) => {
     }
 }
 
-export const showpostedjobs =async (req, res) => {
+export const showpostedjobs = async (req, res) => {
     try {
         const token = req.cookies.accesstoken;
         if (!token) {
@@ -163,7 +164,7 @@ export const showpostedjobs =async (req, res) => {
     }
 }
 
-export const showapplicant = async(req,res)=>{
+export const showapplicant = async (req, res) => {
     try {
         const token = req.cookies.accesstoken;
         if (!token) {
@@ -180,7 +181,7 @@ export const showapplicant = async(req,res)=>{
         const applicants = await prisma.application.findMany({
             where: { jobId: jobId },
             select: {
-                   id: true,
+                id: true,
                 name: true,
                 email: true,
                 username: true,
@@ -189,6 +190,73 @@ export const showapplicant = async(req,res)=>{
         });
         res.set("Cache-Control", "public, max-age=300");
         return res.status(200).json(applicants);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const showposts = async (req, res) => {
+    try {
+        const userid = req.params.id;
+        if (!userid) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+        const psots = await prisma.psots.findMany({
+            postedbyid: userid,
+        })
+        res.set("Cache-Control", "public, max-age=300");
+        return res.status(200).json(psots);
+    } catch (error) {
+        consoe.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const showpercentmatch = async (req, res) => {
+    try {
+        const userid = req.params.id;
+        const jobid = req.params.jobid;
+        if (!userid || !jobid) {
+            return res.status(400).json({ message: "User ID and jobid  is required" });
+        }
+        const userskill = await prisma.user.findUnique({
+            where: { id: userid },
+            select: {
+                skills: {
+                    select: {
+                        id: true,
+                    }
+                },
+            }
+
+        })
+        const requiredskill = await prisma.requirement.findUnique({
+            where: { jobid: jobid },
+            select: {
+                skills: {
+                    select: {
+                        id: true,
+                    }
+                },
+            }
+        })
+        const userSkillIds = new Set(
+            userskill.skills.map(skill => skill.id)
+        );
+
+        const requiredSkillIds = requiredskill.skills.map(skill => skill.id);
+
+        const matchedSkills = requiredSkillIds.filter(skillId =>
+            userSkillIds.has(skillId)
+        );
+
+        const percentage =
+            (matchedSkills.length / requiredSkillIds.length) * 100;
+        res.set("Cache-Control", "public, max-age=300");
+        return res.status(200).json({ percentage });
+
+
     } catch (error) {
         console.log(error)
         return res.status(500).json({ message: "Internal server error" });
