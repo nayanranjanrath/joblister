@@ -9,7 +9,7 @@ export const addpost = async (req, res) => {
             return res.status(403).json({ message: "Unauthorized" });
         }
         const { title, description, } = req.body;
-        if (!title || !description || !category) {
+        if (!title || !description ) {
             return res.status(400).json({ message: "All fields are required" });
         }
         const imagePaths = req.files?.map(file => file.path) || [];
@@ -25,7 +25,7 @@ export const addpost = async (req, res) => {
             data: {
                 title,
                 description,
-                category,
+                
                 image: imageUrls,
                 postedBy: { connect: { id: userId } },
             },
@@ -38,6 +38,7 @@ export const addpost = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
 
 
 export const likepost = async(req, res) => {
@@ -72,7 +73,7 @@ export const likepost = async(req, res) => {
     }
 }
 
-export const likedalredyornot = async(req,res)=>{
+export const likedalredyornottopost = async(req,res)=>{
     try {
           const token = req.cookies.accesstoken;
 
@@ -94,8 +95,8 @@ export const likedalredyornot = async(req,res)=>{
         const like = await prisma.like.findUnique({
             where: {
                 postId_userId: {
-                    postId: postId,
-                    userId: userId,
+                    postid: postId,
+                    userid: userId,
                 },
             },
         })
@@ -148,7 +149,7 @@ export const getcomment=async(req,res)=>{
     }
     const comments = await prisma.comment.findMany({
         where: {
-            postId: postiid,
+            postid: postiid,
         },
         select: {
             id: true,
@@ -172,7 +173,7 @@ export const getlikes =async(req,res)=>{
         const postid=req.params.postid;
         const likes = await prisma.like.findMany({
             where: {
-                postId: postid,
+                postid: postid,
             },
             select: {
                 id: true,

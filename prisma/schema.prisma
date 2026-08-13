@@ -109,7 +109,7 @@ model skills {
 
 model userskills {
   id               String            @id @default(uuid())
-  skillid          String
+  skillid          String[]
   userid           String
   educationid      String?
   projectid        String?

@@ -1,0 +1,249 @@
+import prisma from "../utility/prisma";
+import { extractToken } from "../utility/jwt.js";
+import { uploadtocloudinar } from "../utility/cloudinary.js";
+
+export const addproject = async (req, res) => {
+    try {
+        const token = req.cookies.accesstoken;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const { title, description, } = req.body;
+        if (!title || !description ) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        const imagePaths = req.files?.map(file => file.path) || [];
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const uploadedImages = await Promise.all(
+            imagePaths.map(path => uploadtocloudinar(path))
+        );
+        const imageUrls = uploadedImages.map(image => image.secure_url);
+        const post = await prisma.post.create({
+            data: {
+                title,
+                description,
+                
+                posts: imageUrls,
+                postedBy: { connect: { id: userId } },
+            },
+        });
+        return res.status(201).json({ message: "Post created successfully", post });
+
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const addskilltoproject = async(req,res)=>{
+    try {
+        const token = req.cookies.accesstoken;
+        if(!token){
+            return res.status(403).json({message:"Unauthorized"});
+        }
+        const projectId = req.body.projectid;
+        const skillid = req.body.skillid;
+        if(!postId||!skillid){
+            return res.status(400).json({message:"Post ID and skill ID is required"});
+        }
+        const userId = extractToken(token);
+        if(!userId){
+            return res.status(403).json({message:"Unauthorized"});
+        }
+        const savedskill = await prisma.userskills.create({
+            data: {
+                project: {connect:{id:projectid}},
+                skill: {connect:{id:skillid}},
+                user: {connect:{id:userid}}
+            },
+        });
+        return res.status(201).json({message:"Skill created successfully",skill});
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+
+    }
+}
+
+export const likeproject = async(req, res) => {
+    try {
+        const token = req.cookies.accesstoken;
+
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const projectId = req.body.projectid;
+        if (!projectId) {
+            return res.status(400).json({ message: "Post ID is required" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const project = await prisma.project.findUnique({ where: { id: projectId } });
+        if (!project) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        const like = await prisma.like.create({
+            data: {
+                project: { connect: { id: projectId } },
+                user: { connect: { id: userId } },
+            },
+        });
+        return res.status(201).json({ message: "Post liked successfully", like });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const likedalredyornottoproject = async(req,res)=>{
+    try {
+          const token = req.cookies.accesstoken;
+
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const postId = req.body.projectid;
+        if (!projectId) {
+            return res.status(400).json({ message: "Post ID is required" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const project = await prisma.project.findUnique({ where: { id: projectId } });
+        if (!project) {
+            return res.status(404).json({ message: "Post not found" });
+        }
+        const like = await prisma.like.findUnique({
+            where: {
+                postId_userId: {
+                    projectid: projectId,
+                    userid: userId,
+                },
+            },
+        })
+        if(like){
+            return res.status(200).json({ message: "Post liked already"  });
+        }
+        return res.status(200).json({ message: "Post not liked"  });
+    } catch (error) {
+        consople.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const commentapost = async(req, res) => {
+    try {
+        const token = req.cookies.accesstoken;
+
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const projectId = req.body.projectid;
+        const comment = req.body.comment;
+        if (!projectId) {
+            return res.status(400).json({ message: "Post ID is required" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const savedcomment = await prisma.comment.create({
+            data: {
+                project: { connect: { id: projectId } },
+                user: { connect: { id: userId } },
+                comment: comment,
+            },
+        });
+        return res.status(201).json({ message: "Comment created successfully", comment });
+    }
+    catch{
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const getcomment=async(req,res)=>{
+ try {
+    const projectid=req.params.projectid;
+    if(!projectid){
+        return res.status(400).json({ message: "Post ID is required" });
+    }
+    const comments = await prisma.comment.findMany({
+        where: {
+            projectid: projectid,
+        },
+        select: {
+            id: true,
+            comment: true,
+            user: {
+                select: {
+                    username: true,
+                    avatar: true,
+                },
+            },
+        },
+    })
+ } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: "Internal server error" });
+ }   
+}
+export const getlikes =async(req,res)=>{
+    try {
+        const prostid=req.params.prostid;
+        const likes = await prisma.like.findMany({
+            where: {
+                prostid: prostid,
+            },
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        username: true,
+                        avatar: true,
+                    },
+                },  
+            }
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+
+export const yourlikedprojects = async (req,res)=>{
+    try {
+        const token = req.cookies.accesstoken;
+        if (!token) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const userId = extractToken(token);
+        if (!userId) {
+            return res.status(403).json({ message: "Unauthorized" });
+        }
+        const yourlikedproject = await prisma.like.findMany({
+            where: {
+                user: {
+                    id: userId,
+                },
+            },
+            include: {
+                project: true,
+            },
+        });
+        res.set("Cache-Control", "public, max-age=300");
+        return res.status(200).json(yourlikedposts);
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
