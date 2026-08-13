@@ -91,19 +91,20 @@ model expirience {
 
 model requirement {
   id          String   @id @default(uuid())
-  skillids      String[] @default([])
+  skillids    String[] @default([])
   expirience  Int
   description String
   jobid       String   @unique
   job         jobs     @relation(fields: [jobid], references: [id])
-  skills      skills  @relation(fields: [skillids],references: [id])
+  skills      skills   @relation(fields: [skillids], references: [id])
 }
 
 model skills {
   id    String @id @default(uuid())
   skill String
 
-  userskills userskills[]
+  userskills   userskills[]
+  requirements requirement[]
 }
 
 model userskills {
@@ -111,11 +112,13 @@ model userskills {
   skillid          String
   userid           String
   educationid      String?
+  projectid        String?
   expirienceid     String?
   educationdetails educationdetails? @relation(fields: [educationid], references: [id])
   expirience       expirience?       @relation(fields: [expirienceid], references: [id])
   user             users             @relation(fields: [userid], references: [id])
   skill            skills            @relation(fields: [skillid], references: [id])
+  project          project?          @relation(fields: [projectid], references: [id])
 }
 
 model posts {
@@ -131,20 +134,34 @@ model posts {
 }
 
 model like {
-  id     String @id @default(uuid())
-  userid String
-  postid String
-  user   users  @relation(fields: [userid], references: [id])
-  post   posts  @relation(fields: [postid], references: [id])
+  id        String   @id @default(uuid())
+  userid    String
+  postid    String?
+  user      users    @relation(fields: [userid], references: [id])
+  post      posts?   @relation(fields: [postid], references: [id])
+  projectid String?
+  project   project? @relation(fields: [projectid], references: [id])
 
   @@unique([postid, userid])
 }
 
 model comment {
-  id      String @id @default(uuid())
-  comment String
-  userid  String
-  postid  String
-  user    users  @relation(fields: [userid], references: [id])
-  post    posts  @relation(fields: [postid], references: [id])
+  id        String   @id @default(uuid())
+  comment   String
+  userid    String
+  postid    String?
+  projectid String?
+  user      users    @relation(fields: [userid], references: [id])
+  post      posts?   @relation(fields: [postid], references: [id])
+  project   project? @relation(fields: [projectid], references: [id])
+}
+
+model project {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  posts       String
+  skill       userskills[]
+  like        like[]
+  comment     comment[]
 }
